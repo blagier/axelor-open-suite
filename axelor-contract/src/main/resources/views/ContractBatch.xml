@@ -9,6 +9,8 @@
     <field name="actionSelect"/>
     <field name="company" if="__config__.app.getApp('base')?.getEnableMultiCompany()"/>
     <field name="description"/>
+    <field name="duration"/>
+    <field name="typeSelect"/>
   </grid>
 
   <form name="contract-batch-form" title="Contract batch"
@@ -19,6 +21,8 @@
       <field name="code"/>
       <field name="company" canEdit="false" widget="SuggestBox" form-view="company-form"
         grid-view="company-grid"/>
+      <field name="duration"/>
+      <field name="typeSelect"/>
     </panel>
     <panel-tabs name="mainPanelTab">
       <panel name="invoicingPanel" title="Invoicing" showIf="actionSelect == 1">
@@ -39,6 +43,10 @@
       <button name="batchBtn" title="Run batch"
         onClick="save,action-contract-method-run-batch" colSpan="12"/>
     </panel>
+    <panel-mail name="mailPanel">
+      <mail-messages limit="10"/>
+      <mail-followers/>
+    </panel-mail>
   </form>
 
   <action-method name="action-contract-method-run-batch">

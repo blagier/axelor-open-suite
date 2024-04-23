@@ -52,6 +52,7 @@
     <option value="3">Current version activation</option>
     <option value="4">Next version activation</option>
     <option value="5">Revaluate contracts</option>
+    <option value="6">Remind end of contracts</option>
   </selection>
 
   <selection name="account.analytic.move.line.type.select"
@@ -66,6 +67,12 @@
 
   <selection name="batch.batch.type.select" id="contract.batch.batch.type.select">
     <option value="500">Contract batch</option>
+  </selection>
+
+  <selection name="contract.batch.type.select" id="contract.contract.batch.type.select">
+    <option value="0">days</option>
+    <option value="1">weeks</option>
+    <option value="2">months</option>
   </selection>
 
 </object-views>

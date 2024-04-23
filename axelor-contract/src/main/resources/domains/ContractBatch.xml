@@ -16,13 +16,34 @@
     <integer name="targetTypeSelect" title="Type" selection="contract.target.type.select"/>
     <date name="invoicingDate" title="Invoicing date"/>
 
+    <integer name="duration" title="Duration" min="0"/>
+    <integer name="typeSelect" title="Type" selection="contract.batch.type.select"/>
+    
     <extra-code><![CDATA[
         public static final int INVOICING = 1;
         public static final int TERMINATE = 2;
         public static final int CURRENT_VERSION_ACTIVATION = 3;
         public static final int NEXT_VERSION_ACTIVATION = 4;
         public static final int REVALUATE_CONTRACTS = 5;
+        public static final int REMIND_END_OF_CONTRACTS = 6;
+
+        public static final int DAYS = 0;
+        public static final int WEEKS = 1;
+        public static final int MONTHS = 2;
       ]]></extra-code>
+
+    <track on="UPDATE">
+      <field name="code"/>
+      <field name="actionSelect"/>
+      <field name="company"/>
+      <field name="description"/>
+      <field name="batchList"/>
+      <field name="targetTypeSelect"/>
+      <field name="invoicingDate"/>
+      <field name="duration"/>
+      <field name="typeSelect"/>
+    </track>
+
   </entity>
 
 </domain-models>

@@ -19,6 +19,8 @@
 
     <boolean name="isConfigContract" title="Configurable contract"/>
 
+    <many-to-one name="mailTemplate" title="Mail template" ref="com.axelor.message.db.Template"/>
+
     <track>
       <field name="isUnchangableContract" on="UPDATE"/>
       <field name="isAmendmentManagement" on="UPDATE"/>
@@ -27,6 +29,7 @@
       <field name="isConsumptionManagement" on="UPDATE"/>
       <field name="isAdditionalBenefitManagement" on="UPDATE"/>
       <field name="isConfigContract" on="UPDATE"/>
+      <field name="mailTemplate" on="UPDATE"/>
     </track>
   </entity>
 

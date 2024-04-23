@@ -28,6 +28,7 @@
         <field name="isAdditionalBenefitManagement" colSpan="4" widget="boolean-switch"
           hidden="true" showIf="isInvoicingManagement"/>
       </panel>
+      <field name="mailTemplate"/>
     </panel>
 
     <panel-mail name="mailPanel">

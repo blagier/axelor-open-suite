@@ -1,7 +1,7 @@
 package com.axelor.apps.contract.batch;
 
 import com.axelor.apps.account.service.batch.BatchStrategy;
-import com.axelor.apps.base.db.Batch;
+import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.exception.TraceBackService;
 import com.axelor.apps.contract.db.Contract;
 import com.axelor.apps.contract.db.ContractBatch;
@@ -17,6 +17,7 @@ import com.axelor.message.db.Template;
 import com.axelor.message.db.repo.TemplateRepository;
 import com.axelor.message.service.MessageServiceImpl;
 import com.axelor.message.service.TemplateMessageServiceImpl;
+import com.axelor.studio.db.AppContract;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,10 @@ public class BatchContractReminder extends BatchStrategy {
     protected MessageServiceImpl messageService;
     protected ContractRepository contractRepository;
     protected ContractBatchRepository contractBatchRepository;
+    protected AppBaseService appBaseService;
     public static final String MAIL_TEMPLATE = "Contract batch mail template";
+    private static final int FETCH_SIZE = 10;
+
 
     @Inject
     public BatchContractReminder(
@@ -41,18 +45,22 @@ public class BatchContractReminder extends BatchStrategy {
             TemplateRepository templateRepository,
             MessageServiceImpl messageService,
             ContractRepository contractRepository,
-            ContractBatchRepository contractBatchRepository
+            ContractBatchRepository contractBatchRepository,
+            AppBaseService appBaseService
     ) {
         this.templateMessageService = templateMessageService;
         this.templateRepository = templateRepository;
         this.messageService = messageService;
         this.contractRepository = contractRepository;
         this.contractBatchRepository = contractBatchRepository;
+        this.appBaseService = appBaseService;
     }
 
     protected void sendReminderMail(Contract contract) {
         try {
-            Template mailTemplate = templateRepository.findByName(MAIL_TEMPLATE);
+            AppContract appContract = (AppContract) appBaseService.getApp("contract");
+            // Template mailTemplate = templateRepository.findByName(MAIL_TEMPLATE);
+            Template mailTemplate = appContract.getMailTemplate();
             Message message = templateMessageService.generateMessage((Model) contract, mailTemplate);
             ContractVersion contractVersion = contract.getCurrentContractVersion();
             message.addToEmailAddressSetItem(new EmailAddress(contractVersion.getActivatedByUser().getEmail()));
@@ -62,11 +70,11 @@ public class BatchContractReminder extends BatchStrategy {
         }
     }
 
-    protected  List<Contract> getContracts() {
+    protected  List<Contract> getContracts(int offset) {
         return Query.of(Contract.class)
                 .filter("self.statusSelect = :activeContract")
                 .bind("activeContract", ContractRepository.ACTIVE_CONTRACT)
-                .fetch();
+                .fetch(FETCH_SIZE, offset);
     }
 
     protected boolean remindCondition(LocalDate supposedEndDate, LocalDate batchEndDate) {
@@ -107,17 +115,23 @@ public class BatchContractReminder extends BatchStrategy {
 
     @Override
     protected void process() throws SQLException {
-        for (Contract contract : getContracts()) {
-            try {
-                if (needsToBeReminded(contract)) {
-                    sendReminderMail(contract);
-                    incrementDone();
+        int offset = 0;
+        List<Contract> contracts = getContracts(offset);
+        for (; !contracts.isEmpty(); contracts = getContracts(offset)) {
+            for (Contract contract : getContracts(offset)) {
+                try {
+                    if (needsToBeReminded(contract)) {
+                        sendReminderMail(contract);
+                        incrementDone();
+                    }
+                } catch (Exception e) {
+                    incrementAnomaly();
+                    offset++;
+                    TraceBackService.trace(e, "Contract reminding batch", batch.getId());
                 }
-                // JPA.clear();
-            } catch (Exception e) {
-                incrementAnomaly();
-                TraceBackService.trace(e, "Contract reminding batch", batch.getId());
             }
+            JPA.clear();
         }
+
     }
 }

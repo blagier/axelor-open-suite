@@ -11,6 +11,7 @@ import com.axelor.apps.contract.db.repo.ContractRepository;
 import com.axelor.db.JPA;
 import com.axelor.db.Model;
 import com.axelor.db.Query;
+import com.axelor.message.db.EmailAddress;
 import com.axelor.message.db.Message;
 import com.axelor.message.db.Template;
 import com.axelor.message.db.repo.TemplateRepository;
@@ -53,6 +54,8 @@ public class BatchContractReminder extends BatchStrategy {
         try {
             Template mailTemplate = templateRepository.findByName(MAIL_TEMPLATE);
             Message message = templateMessageService.generateMessage((Model) contract, mailTemplate);
+            ContractVersion contractVersion = contract.getCurrentContractVersion();
+            message.addToEmailAddressSetItem(new EmailAddress(contractVersion.getActivatedByUser().getEmail()));
             messageService.sendByEmail(message);
         } catch (ClassNotFoundException | MessagingException e) {
             logger.error(e.getMessage());
@@ -61,8 +64,8 @@ public class BatchContractReminder extends BatchStrategy {
 
     protected  List<Contract> getContracts() {
         return Query.of(Contract.class)
-                .filter("self.statusSelect != :closedContract")
-                .bind("closedContract", ContractRepository.CLOSED_CONTRACT)
+                .filter("self.statusSelect = :activeContract")
+                .bind("activeContract", ContractRepository.ACTIVE_CONTRACT)
                 .fetch();
     }
 
@@ -110,7 +113,7 @@ public class BatchContractReminder extends BatchStrategy {
                     sendReminderMail(contract);
                     incrementDone();
                 }
-                JPA.clear();
+                // JPA.clear();
             } catch (Exception e) {
                 incrementAnomaly();
                 TraceBackService.trace(e, "Contract reminding batch", batch.getId());

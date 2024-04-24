@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_7.0.xsd">
+
+    <action-view name="action.show.dashboard" title="Accueil" home="true">
+        <view type="dashboard" name="home.dashboard"/>
+    </action-view>
+
+    <dashboard name="home.dashboard" title="Accueil" width="large">
+        <dashlet action="user.active.contracts" height="350" canSearch="true" colSpan="12"/>
+    </dashboard>
+
+    <action-view name="user.active.contracts" title="User active contracts">
+        <view type="custom" name="report-table-user-active-contracts"/>
+    </action-view>
+
+    <custom title="User active contracts" name="report-table-user-active-contracts">
+        <dataset type="rpc">
+            com.axelor.apps.contract.web.ContractController:getUserActiveContracts
+        </dataset>
+        <template>
+        <![CDATA[
+            <report-table />
+        ]]></template>
+    </custom>
+
+
+</object-views>

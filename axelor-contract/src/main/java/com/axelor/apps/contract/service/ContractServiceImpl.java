@@ -38,6 +38,7 @@ import com.axelor.apps.base.service.DurationService;
 import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.tax.AccountManagementService;
 import com.axelor.apps.base.service.tax.TaxService;
+import com.axelor.apps.contract.batch.BatchContractReminder;
 import com.axelor.apps.contract.db.ConsumptionLine;
 import com.axelor.apps.contract.db.Contract;
 import com.axelor.apps.contract.db.ContractLine;
@@ -52,8 +53,11 @@ import com.axelor.apps.contract.generator.InvoiceGeneratorContract;
 import com.axelor.apps.contract.model.AnalyticLineContractModel;
 import com.axelor.apps.supplychain.service.AnalyticLineModelService;
 import com.axelor.auth.AuthUtils;
+import com.axelor.auth.db.User;
+import com.axelor.db.JPA;
 import com.axelor.i18n.I18n;
 import com.axelor.inject.Beans;
+import com.axelor.studio.db.AppContract;
 import com.axelor.utils.helpers.date.LocalDateHelper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -63,15 +67,14 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.persistence.Query;
 
 public class ContractServiceImpl extends ContractRepository implements ContractService {
 
@@ -896,5 +899,22 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
       }
     }
     contractRepository.save(contract);
+  }
+
+  public List<Map<String, Contract>> getUserActiveContracts(User user) {
+    AppContract appContract = (AppContract) appBaseService.getApp("contract");
+    var duration = appContract.getDuration();
+    var typeSelect = appContract.getTypeSelect();
+    var supposedEndDate = BatchContractReminder.computeBatchEndDate(duration, typeSelect);
+    List<Contract> contractList = JPA.all(Contract.class)
+            .filter("self.createdBy = :user AND self.statusSelect = :activeContract " +
+                    "AND self.currentContractVersion.supposedEndDate <= :supposedEndDate")
+            .bind("user", user)
+            .bind("activeContract", ContractRepository.ACTIVE_CONTRACT)
+            .bind("supposedEndDate", supposedEndDate)
+            .fetch();
+    return contractList.stream()
+            .map(c -> Map.of(c.getName(), c))
+            .collect(Collectors.toList());
   }
 }

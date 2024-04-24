@@ -25,10 +25,12 @@ import com.axelor.apps.contract.db.Contract;
 import com.axelor.apps.contract.db.ContractLine;
 import com.axelor.apps.contract.db.ContractTemplate;
 import com.axelor.apps.contract.db.ContractVersion;
+import com.axelor.auth.db.User;
 import com.google.common.collect.Multimap;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface ContractService {
 
@@ -168,4 +170,6 @@ public interface ContractService {
   Contract getNextContract(Contract contract) throws AxelorException;
 
   void setInitialPriceOnContractLines(Contract contract);
+
+  List<Map<String, Contract>> getUserActiveContracts(User user);
 }

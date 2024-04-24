@@ -96,7 +96,7 @@ public class BatchContractReminder extends BatchStrategy {
                 supposedEndDate.isEqual(batchEndDate);
     }
 
-    protected LocalDate computeBatchEndDate(int duration, int durationType) {
+    public static LocalDate computeBatchEndDate(int duration, int durationType) {
         var batchEndDate = LocalDate.now();
         switch (durationType) {
             case ContractBatchRepository.DAYS:

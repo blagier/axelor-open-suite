@@ -36,6 +36,7 @@ import com.axelor.apps.contract.db.repo.ContractTemplateRepository;
 import com.axelor.apps.contract.db.repo.ContractVersionRepository;
 import com.axelor.apps.contract.service.ContractLineService;
 import com.axelor.apps.contract.service.ContractService;
+import com.axelor.apps.contract.service.ContractServiceImpl;
 import com.axelor.apps.contract.service.attributes.ContractLineAttrsService;
 import com.axelor.apps.supplychain.service.PartnerLinkSupplychainService;
 import com.axelor.db.JPA;
@@ -47,6 +48,8 @@ import com.axelor.rpc.ActionResponse;
 import com.axelor.utils.helpers.ModelHelper;
 import com.google.inject.Singleton;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @Singleton
 public class ContractController {
@@ -334,6 +337,16 @@ public class ContractController {
       response.setAttrs(
           Beans.get(ContractLineAttrsService.class)
               .setScaleAndPrecision(contract, "additionalBenefitContractLineList."));
+    } catch (Exception e) {
+      TraceBackService.trace(response, e, ResponseMessageType.ERROR);
+    }
+  }
+
+  public void getUserActiveContracts(ActionRequest request, ActionResponse response) {
+    try {
+      List<Map<String, Contract>> contractList = Beans.get(ContractService.class)
+              .getUserActiveContracts(request.getUser());
+      response.setData(contractList);
     } catch (Exception e) {
       TraceBackService.trace(response, e, ResponseMessageType.ERROR);
     }

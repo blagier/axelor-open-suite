@@ -11,6 +11,7 @@ import com.axelor.apps.contract.db.repo.ContractRepository;
 import com.axelor.db.JPA;
 import com.axelor.db.Model;
 import com.axelor.db.Query;
+import com.axelor.i18n.I18n;
 import com.axelor.message.db.EmailAddress;
 import com.axelor.message.db.Message;
 import com.axelor.message.db.Template;
@@ -35,8 +36,6 @@ public class BatchContractReminder extends BatchStrategy {
     protected ContractRepository contractRepository;
     protected ContractBatchRepository contractBatchRepository;
     protected AppBaseService appBaseService;
-    public static final String MAIL_TEMPLATE = "Contract batch mail template";
-    private static final int FETCH_SIZE = 10;
 
 
     @Inject
@@ -59,11 +58,8 @@ public class BatchContractReminder extends BatchStrategy {
     protected void sendReminderMail(Contract contract) {
         try {
             AppContract appContract = (AppContract) appBaseService.getApp("contract");
-            // Template mailTemplate = templateRepository.findByName(MAIL_TEMPLATE);
             Template mailTemplate = appContract.getMailTemplate();
             Message message = templateMessageService.generateMessage((Model) contract, mailTemplate);
-            ContractVersion contractVersion = contract.getCurrentContractVersion();
-            message.addToEmailAddressSetItem(new EmailAddress(contractVersion.getActivatedByUser().getEmail()));
             messageService.sendByEmail(message);
         } catch (ClassNotFoundException | MessagingException e) {
             logger.error(e.getMessage());
@@ -71,10 +67,10 @@ public class BatchContractReminder extends BatchStrategy {
     }
 
     protected  List<Contract> getContracts(int offset) {
-        return Query.of(Contract.class)
+        return JPA.all(Contract.class)
                 .filter("self.statusSelect = :activeContract")
                 .bind("activeContract", ContractRepository.ACTIVE_CONTRACT)
-                .fetch(FETCH_SIZE, offset);
+                .fetch(FETCH_LIMIT, offset);
     }
 
     protected boolean remindCondition(LocalDate supposedEndDate, LocalDate batchEndDate) {
@@ -101,10 +97,7 @@ public class BatchContractReminder extends BatchStrategy {
         return batchEndDate;
     }
 
-    protected boolean needsToBeReminded(Contract contract) {
-        ContractBatch contractBatch = batch.getContractBatch();
-        var duration = contractBatch.getDuration();
-        var durationType = contractBatch.getTypeSelect();
+    protected boolean needsToBeReminded(Contract contract, int duration, int durationType) {
         var supposedEndDate = contract.getCurrentContractVersion().getSupposedEndDate();
         var batchEndDate = computeBatchEndDate(duration, durationType);
         if (supposedEndDate == null || batchEndDate == null) {
@@ -115,23 +108,28 @@ public class BatchContractReminder extends BatchStrategy {
 
     @Override
     protected void process() throws SQLException {
+        ContractBatch contractBatch = batch.getContractBatch();
+        var duration = contractBatch.getDuration();
+        var durationType = contractBatch.getTypeSelect();
         int offset = 0;
         List<Contract> contracts = getContracts(offset);
         for (; !contracts.isEmpty(); contracts = getContracts(offset)) {
             for (Contract contract : getContracts(offset)) {
+                ++offset;
                 try {
-                    if (needsToBeReminded(contract)) {
+                    if (needsToBeReminded(contract, duration, durationType)) {
                         sendReminderMail(contract);
                         incrementDone();
                     }
                 } catch (Exception e) {
                     incrementAnomaly();
-                    offset++;
                     TraceBackService.trace(e, "Contract reminding batch", batch.getId());
                 }
             }
             JPA.clear();
         }
-
+        String anomalies = I18n.get("anomaly", "anomalies", batch.getAnomaly());
+        String success = I18n.get("done", "done", batch.getDone());
+        addComment(String.format("%d %s, %d %s.", batch.getDone(), success, batch.getAnomaly(), anomalies));
     }
 }

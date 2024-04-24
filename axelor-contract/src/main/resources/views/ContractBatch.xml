@@ -67,5 +67,9 @@
     model="com.axelor.apps.contract.db.ContractBatch">
     <field name="invoicingDate"
       expr="eval:__config__.app.getTodayDate(__user__.activeCompany)"/>
+    <field name="duration"
+      expr="eval:__repo__(AppContract).all().fetchOne()?.duration"/>
+    <field name="typeSelect"
+      expr="eval:__repo__(AppContract).all().fetchOne()?.typeSelect"/>
   </action-record>
 </object-views>

@@ -21,6 +21,9 @@
 
     <many-to-one name="mailTemplate" title="Mail template" ref="com.axelor.message.db.Template"/>
 
+    <integer name="duration" title="Duration" min="0"/>
+    <integer name="typeSelect" title="Type" selection="contract.batch.type.select"/>
+
     <track>
       <field name="isUnchangableContract" on="UPDATE"/>
       <field name="isAmendmentManagement" on="UPDATE"/>

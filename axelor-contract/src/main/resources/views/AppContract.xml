@@ -29,6 +29,8 @@
           hidden="true" showIf="isInvoicingManagement"/>
       </panel>
       <field name="mailTemplate"/>
+      <field name="duration"/>
+      <field name="typeSelect"/>
     </panel>
 
     <panel-mail name="mailPanel">

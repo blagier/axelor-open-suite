@@ -5,13 +5,14 @@ import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.exception.TraceBackService;
 import com.axelor.apps.contract.db.Contract;
 import com.axelor.apps.contract.db.ContractBatch;
-import com.axelor.apps.contract.db.ContractVersion;
 import com.axelor.apps.contract.db.repo.ContractBatchRepository;
 import com.axelor.apps.contract.db.repo.ContractRepository;
 import com.axelor.db.JPA;
 import com.axelor.db.Model;
-import com.axelor.db.Query;
 import com.axelor.i18n.I18n;
+import com.axelor.mail.db.MailAddress;
+import com.axelor.mail.db.MailFollower;
+import com.axelor.mail.db.repo.MailFollowerRepository;
 import com.axelor.message.db.EmailAddress;
 import com.axelor.message.db.Message;
 import com.axelor.message.db.Template;
@@ -27,6 +28,9 @@ import javax.mail.MessagingException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BatchContractReminder extends BatchStrategy {
     protected Logger logger = LoggerFactory.getLogger(getClass());
@@ -36,6 +40,7 @@ public class BatchContractReminder extends BatchStrategy {
     protected ContractRepository contractRepository;
     protected ContractBatchRepository contractBatchRepository;
     protected AppBaseService appBaseService;
+    protected MailFollowerRepository mailFollowerRepository;
 
 
     @Inject
@@ -45,7 +50,8 @@ public class BatchContractReminder extends BatchStrategy {
             MessageServiceImpl messageService,
             ContractRepository contractRepository,
             ContractBatchRepository contractBatchRepository,
-            AppBaseService appBaseService
+            AppBaseService appBaseService,
+            MailFollowerRepository mailFollowerRepository
     ) {
         this.templateMessageService = templateMessageService;
         this.templateRepository = templateRepository;
@@ -53,6 +59,16 @@ public class BatchContractReminder extends BatchStrategy {
         this.contractRepository = contractRepository;
         this.contractBatchRepository = contractBatchRepository;
         this.appBaseService = appBaseService;
+        this.mailFollowerRepository = mailFollowerRepository;
+    }
+
+    protected Set<EmailAddress> getFollowers(Contract contract) {
+        List<MailFollower> mailFollowerList = mailFollowerRepository.findAll(contract);
+        return mailFollowerList.stream()
+                .map(MailFollower::getUser)
+                .filter(u -> Objects.nonNull(u.getEmail()))
+                .map(u -> new EmailAddress(u.getEmail()))
+                .collect(Collectors.toSet());
     }
 
     protected void sendReminderMail(Contract contract) {
@@ -60,6 +76,8 @@ public class BatchContractReminder extends BatchStrategy {
             AppContract appContract = (AppContract) appBaseService.getApp("contract");
             Template mailTemplate = appContract.getMailTemplate();
             Message message = templateMessageService.generateMessage((Model) contract, mailTemplate);
+            var followers = getFollowers(contract);
+            message.setCcEmailAddressSet(followers);
             messageService.sendByEmail(message);
         } catch (ClassNotFoundException | MessagingException e) {
             logger.error(e.getMessage());

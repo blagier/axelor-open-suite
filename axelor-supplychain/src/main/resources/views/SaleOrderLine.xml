@@ -17,6 +17,12 @@
       </insert>
     </extend>
 
+    <extend target="//panel[@name='deliveryPanel']">
+      <insert position="inside">
+        <field name="stockLocation"/>
+      </insert>
+    </extend>
+
     <extend target="//field[@name='product' and @grid-view='product-grid']">
       <attribute name="onChange"
         value="supplychain-action-sale-order-line-group-product-onchange"/>

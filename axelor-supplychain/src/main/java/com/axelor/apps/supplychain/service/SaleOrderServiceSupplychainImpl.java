@@ -62,6 +62,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
@@ -441,5 +442,29 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
     }
     return stockLocation != null && saleOrderA2C != null && !saleOrderA2C.equals(stockLocationA2C)
         || stockLocation == null && saleOrderA2C != null && !saleOrderA2C.equals(companyA2C);
+  }
+
+  protected boolean checkSaleOrderLinesStockLocation(List<SaleOrderLine> saleOrderLineList) {
+    return saleOrderLineList.stream()
+            .allMatch(line -> Objects.nonNull(line.getStockLocation())) &&
+            !saleOrderLineList.isEmpty();
+  }
+
+  @Transactional
+  public void fillLinesStockLocation(SaleOrder saleOrder) {
+    Objects.requireNonNull(saleOrder);
+    SaleOrder so = saleOrderRepo.find(saleOrder.getId());
+    StockLocation stockLocation = so.getStockLocation();
+    List<SaleOrderLine> lines = so.getSaleOrderLineList();
+    if (stockLocation == null && !checkSaleOrderLinesStockLocation(lines)) {
+        throw new IllegalArgumentException("Stock location is not provided for the command" +
+                " and one of the sale order lines does not have stock location specified.");
+    }
+    lines.forEach(l -> {
+      if (l.getStockLocation() == null) {
+        l.setStockLocation(stockLocation);
+      }
+    });
+    saleOrderRepo.save(so);
   }
 }

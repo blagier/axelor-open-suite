@@ -19,7 +19,7 @@
 
     <extend target="//panel[@name='deliveryPanel']">
       <insert position="inside">
-        <field name="stockLocation"/>
+        <field name="stockLocation" if="__config__.app.isApp('supplychain')"/>
       </insert>
     </extend>
 

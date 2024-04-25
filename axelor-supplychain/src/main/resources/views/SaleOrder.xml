@@ -3,6 +3,32 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_7.0.xsd">
 
+
+  <action-validate name="action-supplychain-group-confirmed-validate-lines">
+    <alert message="Stock location is not provided in one of the sale order lines. Empty slots will be automatically filled on confirmation. Do you still want to proceed ?"
+           if="eval: saleOrderLineList?.any{it.stockLocation == null}"/>
+  </action-validate>
+  
+  <action-method name="action-fill-lines-stock-location">
+    <call class="com.axelor.apps.supplychain.web.SaleOrderController"
+          method="fillLinesStockLocation"/>
+  </action-method>
+
+  <!-- surcharge action confirm order -->
+  <action-group name="action-sale-group-confirmed"
+    id="supplychain-action-sale-group-confirmed">
+    <action name="action-supplychain-group-confirmed-validate-lines"/>
+    <action name="action-sale-order-validate-check-on-confirm"/>
+    <action name="action-fill-lines-stock-location"/>
+    <action name="save"/>
+    <action name="action-business-project-method-generate-project"
+            if="__config__.app.isApp('business-project') &amp;&amp; __config__.app.getApp('business-project').getAutomaticProject()"/>
+    <action name="action-sale-order-method-confirm"/>
+    <action name="action-sale-order-method-notify-stock-move-created"
+            if="__config__.app.isApp('supplychain') &amp;&amp; __config__.app.getApp('supplychain')?.customerStockMoveGenerationAuto "/>
+  </action-group>
+
+
   <form name="sale-order-form" title="Sale order" model="com.axelor.apps.sale.db.SaleOrder"
     id="supplychain-sale-order-form" extension="true">
     <extend target="/">

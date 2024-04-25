@@ -735,4 +735,17 @@ public class SaleOrderController {
       TraceBackService.trace(response, e);
     }
   }
+
+  public void fillLinesStockLocation(ActionRequest request, ActionResponse response) {
+    SaleOrder saleOrder = request.getContext().asType(SaleOrder.class);
+    try {
+      var service = Beans.get(SaleOrderSupplychainService.class);
+      service.fillLinesStockLocation(saleOrder);
+    } catch (Exception e) {
+      TraceBackService.trace(response, e);
+      response.setError(e.getMessage());
+    }
+  }
+
+
 }

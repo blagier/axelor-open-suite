@@ -36,6 +36,7 @@ import com.axelor.apps.base.db.repo.PriceListRepository;
 import com.axelor.apps.base.db.repo.TraceBackRepository;
 import com.axelor.apps.base.service.DurationService;
 import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.app.AppBaseServiceImpl;
 import com.axelor.apps.base.service.tax.AccountManagementService;
 import com.axelor.apps.base.service.tax.TaxService;
 import com.axelor.apps.contract.batch.BatchContractReminder;
@@ -57,7 +58,9 @@ import com.axelor.auth.db.User;
 import com.axelor.db.JPA;
 import com.axelor.i18n.I18n;
 import com.axelor.inject.Beans;
+import com.axelor.meta.CallMethod;
 import com.axelor.studio.db.AppContract;
+import com.axelor.studio.db.repo.AppContractRepository;
 import com.axelor.utils.helpers.date.LocalDateHelper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -92,6 +95,7 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
   protected InvoiceRepository invoiceRepository;
   protected InvoiceService invoiceService;
   protected AnalyticLineModelService analyticLineModelService;
+
 
   @Inject
   public ContractServiceImpl(
@@ -916,5 +920,10 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
     return contractList.stream()
             .map(c -> Map.of(c.getName(), c))
             .collect(Collectors.toList());
+  }
+
+  @CallMethod
+  public static LocalDate computeBatchEndDate(int duration, int durationType) {
+    return BatchContractReminder.computeBatchEndDate(duration, durationType);
   }
 }

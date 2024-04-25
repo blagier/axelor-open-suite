@@ -11,19 +11,13 @@
         <dashlet action="user.active.contracts" height="350" canSearch="true" colSpan="12"/>
     </dashboard>
 
-    <action-view name="user.active.contracts" title="User active contracts">
-        <view type="custom" name="report-table-user-active-contracts"/>
+    <action-view name="user.active.contracts" title="User active contracts"
+                 model="com.axelor.apps.contract.db.Contract">
+        <domain>self.createdBy = :_user AND self.statusSelect = 2 AND self.currentContractVersion.supposedEndDate &lt;= :_supposedEndDate</domain>
+        <context name="_supposedEndDate"
+                 expr="eval:com.axelor.apps.contract.service.ContractServiceImpl.computeBatchEndDate(__config__.app.getApp('contract')?.duration, __config__.app.getApp('contract')?.typeSelect)"/>
+        <context name="_user" expr="eval:__user__"/>
     </action-view>
-
-    <custom title="User active contracts" name="report-table-user-active-contracts">
-        <dataset type="rpc">
-            com.axelor.apps.contract.web.ContractController:getUserActiveContracts
-        </dataset>
-        <template>
-        <![CDATA[
-            <report-table />
-        ]]></template>
-    </custom>
 
 
 </object-views>

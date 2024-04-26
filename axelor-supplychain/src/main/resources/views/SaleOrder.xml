@@ -15,13 +15,15 @@
   </action-method>
 
   <action-validate name="action-supplychain-validate-stock-location">
-    <error message="" if="eval: !com.axelor.apps.supplychain.service.SaleOrderServiceSupplychainImpl.checkSaleOrderStockLocation"/>
+    <error message="Stock location is not provided for the command and one of the sale order lines does not have stock location specified."
+           if="eval: !com.axelor.apps.supplychain.service.SaleOrderServiceSupplychainImpl.checkSaleOrderStockLocation(__this__)"/>
   </action-validate>
 
   <!-- surcharge action confirm order -->
   <action-group name="action-sale-group-confirmed"
     id="supplychain-action-sale-group-confirmed">
     <action name="action-supplychain-group-confirmed-validate-lines"/>
+    <action name="action-supplychain-validate-stock-location"/>
     <action name="action-sale-order-validate-check-on-confirm"/>
     <action name="action-fill-lines-stock-location"/>
     <action name="save"/>

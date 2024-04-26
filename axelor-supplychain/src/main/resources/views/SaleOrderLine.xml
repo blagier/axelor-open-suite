@@ -31,7 +31,9 @@
 
     <extend target="//panel[@name='deliveryPanel']">
       <insert position="inside">
-        <field name="stockLocation" if="__config__.app.isApp('supplychain')" onSelect="action-sc-sale-order-line-attrs-set-stock-location"/>
+        <field name="stockLocation"
+               readonlyIf="saleOrder.statusSelect == 3"
+               onSelect="action-sc-sale-order-line-attrs-set-stock-location"/>
       </insert>
     </extend>
 

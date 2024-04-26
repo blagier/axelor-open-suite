@@ -444,21 +444,29 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
         || stockLocation == null && saleOrderA2C != null && !saleOrderA2C.equals(companyA2C);
   }
 
-  protected boolean checkSaleOrderLinesStockLocation(List<SaleOrderLine> saleOrderLineList) {
+  // faire un action-validate avec la méthode de vérification
+
+  public static boolean checkSaleOrderLinesStockLocation(List<SaleOrderLine> saleOrderLineList) {
     return saleOrderLineList.stream()
             .allMatch(line -> Objects.nonNull(line.getStockLocation())) &&
             !saleOrderLineList.isEmpty();
   }
 
-  @Transactional
-  public void fillLinesStockLocation(SaleOrder saleOrder) {
+  public static boolean checkSaleOrderStockLocation(SaleOrder saleOrder) {
+    return saleOrder.getStockLocation() != null ||
+            checkSaleOrderLinesStockLocation(saleOrder.getSaleOrderLineList());
+  }
+
+  @Transactional(rollbackOn = {Exception.class})
+  public void fillLinesStockLocation(SaleOrder saleOrder) throws AxelorException {
     Objects.requireNonNull(saleOrder);
     SaleOrder so = saleOrderRepo.find(saleOrder.getId());
     StockLocation stockLocation = so.getStockLocation();
     List<SaleOrderLine> lines = so.getSaleOrderLineList();
     if (stockLocation == null && !checkSaleOrderLinesStockLocation(lines)) {
-        throw new IllegalArgumentException("Stock location is not provided for the command" +
-                " and one of the sale order lines does not have stock location specified.");
+        throw new AxelorException(
+                TraceBackRepository.CATEGORY_MISSING_FIELD,
+                I18n.get(SupplychainExceptionMessage.COULD_NOT_FIND_STOCK_LOCATION_TO_FILL));
     }
     lines.forEach(l -> {
       if (l.getStockLocation() == null) {

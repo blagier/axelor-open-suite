@@ -384,4 +384,9 @@ public final class SupplychainExceptionMessage {
   public static final String
       COULD_NOT_FIND_RECIPIENTS_FOR_MESSAGE_GENERATED_FROM_STOCK_RULES = /*$$(*/
           "Could not find recipients for message generated from stock rules: %s" /*)*/;
+
+  public static final String
+      COULD_NOT_FIND_STOCK_LOCATION_TO_FILL =
+          "Stock location is not provided for the command " +
+                  "and one of the sale order lines does not have stock location specified.";
 }

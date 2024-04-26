@@ -14,6 +14,10 @@
           method="fillLinesStockLocation"/>
   </action-method>
 
+  <action-validate name="action-supplychain-validate-stock-location">
+    <error message="" if="eval: !com.axelor.apps.supplychain.service.SaleOrderServiceSupplychainImpl.checkSaleOrderStockLocation"/>
+  </action-validate>
+
   <!-- surcharge action confirm order -->
   <action-group name="action-sale-group-confirmed"
     id="supplychain-action-sale-group-confirmed">

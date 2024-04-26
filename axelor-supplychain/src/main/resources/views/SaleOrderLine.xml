@@ -3,6 +3,18 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_7.0.xsd">
 
+  <!-- filtre pour StockLocation SaleOrderLine -->
+  <action-attrs name="action-sc-sale-order-line-attrs-set-stock-location">
+    <attribute if="!__parent__.tradingName?.stockLocationList &amp;&amp; !__parent__.directOrderLocation"
+               name="domain"
+               expr="eval: &quot;${__parent__?.parentContext?.company} = :company and ${__parent__?.parentContext?.typeSelect} != 3 and ${__parent__?.parentContext?.usableOnSaleOrder} = true&quot;"
+               for="stockLocation"/>
+    <attribute if="!__parent__.tradingName?.stockLocationList &amp;&amp; __parent__.directOrderLocation"
+               name="domain"
+               expr="eval: &quot;{__parent__?.parentContext?.typeSelect} != 3 and {__parent__?.parentContext?.usableOnSaleOrder} = true and {__parent__?.parentContext?.directOrderLocation} = true&quot;"
+               for="stockLocation"/>
+  </action-attrs>
+  
   <form name="sale-order-line-form" id="supplychain-sale-order-line-form" title="SO line"
     model="com.axelor.apps.sale.db.SaleOrderLine" width="large" extension="true">
 
@@ -19,7 +31,7 @@
 
     <extend target="//panel[@name='deliveryPanel']">
       <insert position="inside">
-        <field name="stockLocation" if="__config__.app.isApp('supplychain')"/>
+        <field name="stockLocation" if="__config__.app.isApp('supplychain')" onSelect="action-sc-sale-order-line-attrs-set-stock-location"/>
       </insert>
     </extend>
 

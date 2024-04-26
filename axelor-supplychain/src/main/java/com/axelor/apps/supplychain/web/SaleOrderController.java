@@ -743,7 +743,6 @@ public class SaleOrderController {
       service.fillLinesStockLocation(saleOrder);
     } catch (Exception e) {
       TraceBackService.trace(response, e);
-      response.setError(e.getMessage());
     }
   }
 

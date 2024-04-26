@@ -40,5 +40,5 @@ public interface SaleOrderSupplychainService {
 
   public void updateTimetableAmounts(SaleOrder saleOrder);
 
-  void fillLinesStockLocation(SaleOrder saleOrder);
+  void fillLinesStockLocation(SaleOrder saleOrder) throws AxelorException;
 }

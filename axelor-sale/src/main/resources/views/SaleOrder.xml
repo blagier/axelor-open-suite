@@ -693,7 +693,7 @@
         name="generateCustomerStockMoveBtn" title="Generate customer deliveries"
         showIf="statusSelect == 3 &amp;&amp; !orderBeingEdited"
         readonlyIf="!saleOrderLineList || !saleOrderLineList.length > 0" colSpan="12"
-        onClick="save, action-supplychain-sale-order-create-stock-move"/>
+        onClick="save, action-supplychain-sale-order-create-stock-move-grouped-by-stock-location-and-date"/>
       <button name="confirmOrderBtn" title="Confirm order" showIf="statusSelect == 2"
         colSpan="12" onClick="action-sale-group-confirmed"
         readonlyIf="advancePaymentNeeded &amp;&amp; $number(advanceTotal) &lt; $number(advancePaymentAmountNeeded)"/>

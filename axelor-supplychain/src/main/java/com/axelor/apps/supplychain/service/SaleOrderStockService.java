@@ -77,4 +77,5 @@ public interface SaleOrderStockService {
    * @throws AxelorException
    */
   void fullyUpdateDeliveryState(SaleOrder saleOrder) throws AxelorException;
+  List<Long> createStockMovesGroupedByStockLocationAndDateFromSaleOrder(SaleOrder saleOrder) throws AxelorException;
 }

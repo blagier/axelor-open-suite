@@ -746,5 +746,73 @@ public class SaleOrderController {
     }
   }
 
+  public void createStockMovesGroupedByStockLocationAndDate(ActionRequest request, ActionResponse response) {
+    SaleOrder saleOrder = request.getContext().asType(SaleOrder.class);
+
+    try {
+      if (saleOrder.getId() != null) {
+
+        SaleOrderStockService saleOrderStockService = Beans.get(SaleOrderStockService.class);
+        List<Long> stockMoveList =
+                saleOrderStockService.createStockMovesGroupedByStockLocationAndDateFromSaleOrder(
+                        Beans.get(SaleOrderRepository.class).find(saleOrder.getId()));
+
+        if (stockMoveList != null && stockMoveList.size() == 1) {
+          response.setView(
+                  ActionView.define(I18n.get("Stock move"))
+                          .model(StockMove.class.getName())
+                          .add("form", "stock-move-form")
+                          .add("grid", "stock-move-grid")
+                          .param("search-filters", "internal-stock-move-filters")
+                          .param("forceEdit", "true")
+                          .domain("self.id = " + stockMoveList.get(0))
+                          .context("_showRecord", String.valueOf(stockMoveList.get(0)))
+                          .context("_userType", StockMoveRepository.USER_TYPE_SALESPERSON)
+                          .map());
+          // we have to inject TraceBackService to use non static methods
+          Beans.get(TraceBackService.class)
+                  .findLastMessageTraceBack(
+                          Beans.get(StockMoveRepository.class).find(stockMoveList.get(0)))
+                  .ifPresent(
+                          traceback ->
+                                  response.setNotify(
+                                          String.format(
+                                                  I18n.get(MessageExceptionMessage.SEND_EMAIL_EXCEPTION),
+                                                  traceback.getMessage())));
+        } else if (stockMoveList != null && stockMoveList.size() > 1) {
+          response.setView(
+                  ActionView.define(I18n.get("Stock move"))
+                          .model(StockMove.class.getName())
+                          .add("grid", "stock-move-grid")
+                          .add("form", "stock-move-form")
+                          .param("search-filters", "internal-stock-move-filters")
+                          .domain("self.id in (" + Joiner.on(",").join(stockMoveList) + ")")
+                          .context("_userType", StockMoveRepository.USER_TYPE_SALESPERSON)
+                          .map());
+          // we have to inject TraceBackService to use non static methods
+          TraceBackService traceBackService = Beans.get(TraceBackService.class);
+          StockMoveRepository stockMoveRepository = Beans.get(StockMoveRepository.class);
+
+          stockMoveList.stream()
+                  .map(stockMoveRepository::find)
+                  .map(traceBackService::findLastMessageTraceBack)
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .findAny()
+                  .ifPresent(
+                          traceback ->
+                                  response.setNotify(
+                                          String.format(
+                                                  I18n.get(MessageExceptionMessage.SEND_EMAIL_EXCEPTION),
+                                                  traceback.getMessage())));
+        } else {
+          response.setInfo(
+                  I18n.get(SupplychainExceptionMessage.SO_NO_DELIVERY_STOCK_MOVE_TO_GENERATE));
+        }
+      }
+    } catch (Exception e) {
+      TraceBackService.trace(response, e);
+    }
+  }
 
 }

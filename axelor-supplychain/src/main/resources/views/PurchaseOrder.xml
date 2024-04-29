@@ -32,7 +32,7 @@
 
   <action-validate name="action-purchase-order-validate-one-line-selected">
     <error message="Please select at least one line"
-           if="eval: !purchaseOrderLineList || !purchaseOrderLineList.size() == 0 || !purchaseOrderLineList?.any{it.selected}"/>
+           if="eval: !_purchaseOrderLineList?.any{it.selected}"/>
   </action-validate>
 
   <action-view name="action-purchase-order-fill-date-form" title="Fill estimated delivery date for purchase order"
@@ -43,23 +43,18 @@
 
   <action-group name="action-purchase-order-group-fill-date"
                 model="com.axelor.apps.purchase.db.PurchaseOrder">
-      <action name="action-purchase-order-validate-one-line-selected"/>
       <action name="action-purchase-order-fill-date-form"/>
   </action-group>
 
-  <!--
-  <action-attrs name="purchase-order-line.add-lines">
-    <attribute for="$_purchaseOrderLineList" name="value"
-               expr="eval: purchaseOrderLineList?.findAll{it.selected}"/>
-  </action-attrs>
-  -->
+  <action-group name="action-purchase-order-group-apply-date">
+    <action name="action-purchase-order-validate-one-line-selected"/>
+  </action-group>
 
   <action-record name="purchase-order-line.add-lines"
     model="com.axelor.apps.purchase.db.PurchaseOrder">
-    <field name="$_purchaseOrderLineList"
-           expr="eval: purchaseOrderLineList?.findAll{it.selected}"/>
+    <field name="_purchaseOrderLineList"
+           expr="eval: purchaseOrderLineList"/>
   </action-record>
-
 
   <form name="purchase-order-fill-date-form"
         title="Fill estimated delivery date for purchase order"
@@ -69,13 +64,12 @@
         canAttach="false" canSave="false" canNew="false">
     <panel name="mainPanel" showTitle="false">
       <field name="estimatedDeliveryDate" title="Estimated delivery date" type="date" required="true"/>
-      <field name="$_purchaseOrderLineList" title="PO lines"
+      <field name="_purchaseOrderLineList" title="PO lines"
              target="com.axelor.apps.purchase.db.PurchaseOrderLine" type="many-to-many"
              grid-view="purchase-order-line-grid" form-view="purchase-order-line-form"
              readonly="true" colSpan="12"
-             domain="self.product IS NOT NULL AND self.estimatedReceiptDate IS NULL">
-      </field>
-      <button name="fillDateBtn" onClick="" title="Update date"/>
+             domain="self.product IS NOT NULL AND self.estimatedReceiptDate IS NULL"/>
+      <button name="fillDateBtn" onClick="action-purchase-order-group-apply-date" title="Update date"/>
     </panel>
   </form>
 

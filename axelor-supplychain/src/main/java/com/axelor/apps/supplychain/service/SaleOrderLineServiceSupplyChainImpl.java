@@ -256,7 +256,7 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
                 .getAllLocationAndSubLocation(stockLocation, false);
         if (!stockLocationList.isEmpty() && stockLocation.getCompany().getId().equals(companyId)) {
           query +=
-              " AND self.saleOrder.stockLocation.id IN ("
+              " AND self.stockLocation.id IN ("
                   + StringHelper.getIdListString(stockLocationList)
                   + ") ";
         }

@@ -7,11 +7,11 @@
   <action-attrs name="action-sc-sale-order-line-attrs-set-stock-location">
     <attribute if="!__parent__.tradingName?.stockLocationList &amp;&amp; !__parent__.directOrderLocation"
                name="domain"
-               expr="eval: &quot;${__parent__?.parentContext?.company} = :company and ${__parent__?.parentContext?.typeSelect} != 3 and ${__parent__?.parentContext?.usableOnSaleOrder} = true&quot;"
+               expr="eval: &quot;${__parent__?.company?.id} = self.company.id and self.typeSelect != 3 and self.usableOnSaleOrder = true&quot;"
                for="stockLocation"/>
     <attribute if="!__parent__.tradingName?.stockLocationList &amp;&amp; __parent__.directOrderLocation"
                name="domain"
-               expr="eval: &quot;{__parent__?.parentContext?.typeSelect} != 3 and {__parent__?.parentContext?.usableOnSaleOrder} = true and {__parent__?.parentContext?.directOrderLocation} = true&quot;"
+               expr="eval: &quot;self.typeSelect != 3 and self.usableOnSaleOrder = true and self.directOrderLocation = true&quot;"
                for="stockLocation"/>
   </action-attrs>
   

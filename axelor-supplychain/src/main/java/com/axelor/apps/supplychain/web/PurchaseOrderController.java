@@ -42,7 +42,9 @@ import com.google.common.base.Joiner;
 import com.google.inject.Singleton;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class PurchaseOrderController {
@@ -204,9 +206,18 @@ public class PurchaseOrderController {
       response.setError("Estimated receipt date must be filled.");
       return;
     }
+    var purchaseOrderLineList = request.getContext().get("_purchaseOrderLineList");
+    if (purchaseOrderLineList == null) {
+      return;
+    }
     try {
+      List<LinkedHashMap<String, Object>> orderLines = (List<LinkedHashMap<String, Object>>) purchaseOrderLineList;
+      List<Long> selectedLinesIds = orderLines.stream()
+              .filter(m -> (boolean) m.get("selected"))
+              .map(m -> Long.valueOf((int) m.get("id")))
+              .collect(Collectors.toList());
       PurchaseOrderService service = Beans.get(PurchaseOrderService.class);
-      service.updatePurchaseOrderLines((Long) purchaseOrderId, (LocalDate) estimatedReceiptDate);
+      service.updatePurchaseOrderLines((Long) purchaseOrderId, selectedLinesIds, (LocalDate) estimatedReceiptDate);
     } catch (Exception e) {
       TraceBackService.trace(response, e);
     }

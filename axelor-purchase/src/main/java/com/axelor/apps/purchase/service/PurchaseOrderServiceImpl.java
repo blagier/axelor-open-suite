@@ -525,7 +525,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
   @Override
   @Transactional
-  public void updatePurchaseOrderLines(Long purchaseOrderId, LocalDate estimatedReceiptDate) {
+  public void updatePurchaseOrderLines(Long purchaseOrderId, List<Long> selectedLinesIds, LocalDate estimatedReceiptDate) {
     Objects.requireNonNull(purchaseOrderId);
     Objects.requireNonNull(estimatedReceiptDate);
     PurchaseOrder order = purchaseOrderRepo.find(purchaseOrderId);
@@ -533,7 +533,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
       return;
     }
     order.getPurchaseOrderLineList()
-            .stream().filter(Model::isSelected)
+            .stream()
+            .filter(l -> selectedLinesIds.contains(l.getId()))
             .forEach(purchaseOrderLine ->
                     purchaseOrderLine.setEstimatedReceiptDate(estimatedReceiptDate));
     purchaseOrderRepo.save(order);

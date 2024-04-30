@@ -104,5 +104,5 @@ public interface PurchaseOrderService {
 
   void checkPrintingSettings(PurchaseOrder purchaseOrder) throws AxelorException;
 
-  public void updatePurchaseOrderLines(Long purchaseOrderId, LocalDate estimatedReceiptDate);
+  public void updatePurchaseOrderLines(Long purchaseOrderId, List<Long> selectedLines, LocalDate estimatedReceiptDate);
 }

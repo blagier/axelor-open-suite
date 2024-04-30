@@ -57,7 +57,7 @@
            expr="eval: purchaseOrderLineList"/>
   </action-record>
 
-  <action-method name="action-purchase-order-update-lines-date">
+  <action-method name="action-purchase-order-update-lines-date" model="com.axelor.apps.purchase.db.PurchaseOrderLine">
     <call class="com.axelor.apps.supplychain.web.PurchaseOrderController" method="updatePurchaseOrderLines"/>
   </action-method>
   

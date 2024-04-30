@@ -26,6 +26,7 @@ import com.axelor.apps.purchase.db.PurchaseOrder;
 import com.axelor.apps.purchase.db.PurchaseOrderLine;
 import com.axelor.apps.purchase.db.repo.PurchaseOrderLineRepository;
 import com.axelor.apps.purchase.db.repo.PurchaseOrderRepository;
+import com.axelor.apps.purchase.service.PurchaseOrderService;
 import com.axelor.apps.stock.db.StockLocation;
 import com.axelor.apps.stock.db.StockMove;
 import com.axelor.apps.supplychain.exception.SupplychainExceptionMessage;
@@ -39,6 +40,8 @@ import com.axelor.rpc.ActionRequest;
 import com.axelor.rpc.ActionResponse;
 import com.google.common.base.Joiner;
 import com.google.inject.Singleton;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Singleton
@@ -189,6 +192,21 @@ public class PurchaseOrderController {
           Beans.get(PurchaseOrderSupplychainService.class)
               .getFromStockLocation(purchaseOrder.getSupplierPartner(), company);
       response.setValue("fromStockLocation", fromStockLocation);
+    } catch (Exception e) {
+      TraceBackService.trace(response, e);
+    }
+  }
+
+  public void updatePurchaseOrderLines(ActionRequest request, ActionResponse response) {
+    var purchaseOrderId = request.getContext().get("id");
+    var estimatedReceiptDate = request.getContext().get("estimatedReceiptDate");
+    if (estimatedReceiptDate == null) {
+      response.setError("Estimated receipt date must be filled.");
+      return;
+    }
+    try {
+      PurchaseOrderService service = Beans.get(PurchaseOrderService.class);
+      service.updatePurchaseOrderLines((Long) purchaseOrderId, (LocalDate) estimatedReceiptDate);
     } catch (Exception e) {
       TraceBackService.trace(response, e);
     }

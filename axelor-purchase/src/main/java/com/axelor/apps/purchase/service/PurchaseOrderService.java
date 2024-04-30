@@ -103,4 +103,6 @@ public interface PurchaseOrderService {
   public void updateCostPrice(PurchaseOrder purchaseOrder) throws AxelorException;
 
   void checkPrintingSettings(PurchaseOrder purchaseOrder) throws AxelorException;
+
+  public void updatePurchaseOrderLines(Long purchaseOrderId, LocalDate estimatedReceiptDate);
 }

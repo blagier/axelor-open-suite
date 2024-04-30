@@ -25,7 +25,7 @@
     
     <extend target="//panel-related[@name='purchaseOrderLineListPanel']">
       <insert position="after">
-        <button name="fillFormBtn" title="Fill estimated delivery date" onClick="action-purchase-order-group-fill-date"/>
+        <button name="fillFormBtn" title="Fill estimated receipt date" onClick="action-purchase-order-group-fill-date"/>
       </insert>
     </extend>
   </form>
@@ -35,7 +35,7 @@
            if="eval: !_purchaseOrderLineList?.any{it.selected}"/>
   </action-validate>
 
-  <action-view name="action-purchase-order-fill-date-form" title="Fill estimated delivery date for purchase order"
+  <action-view name="action-purchase-order-fill-date-form" title="Fill estimated receipt date for purchase order"
     model="com.axelor.apps.purchase.db.PurchaseOrder">
     <view type="form" name="purchase-order-fill-date-form"/>
     <context name="_showRecord" expr="eval: id"/>
@@ -48,6 +48,7 @@
 
   <action-group name="action-purchase-order-group-apply-date">
     <action name="action-purchase-order-validate-one-line-selected"/>
+    <action name="action-purchase-order-update-lines-date"/>
   </action-group>
 
   <action-record name="purchase-order-line.add-lines"
@@ -56,14 +57,18 @@
            expr="eval: purchaseOrderLineList"/>
   </action-record>
 
+  <action-method name="action-purchase-order-update-lines-date">
+    <call class="com.axelor.apps.supplychain.web.PurchaseOrderController" method="updatePurchaseOrderLines"/>
+  </action-method>
+  
   <form name="purchase-order-fill-date-form"
-        title="Fill estimated delivery date for purchase order"
+        title="Fill estimated receipt date for purchase order"
         model="com.axelor.apps.purchase.db.PurchaseOrder"
         onLoad="purchase-order-line.add-lines"
         canCopy="false" canDelete="false" canArchive="false"
         canAttach="false" canSave="false" canNew="false">
     <panel name="mainPanel" showTitle="false">
-      <field name="estimatedDeliveryDate" title="Estimated delivery date" type="date" required="true"/>
+      <field name="estimatedReceiptDate" title="Estimated receipt date" type="date" required="true"/>
       <field name="_purchaseOrderLineList" title="PO lines"
              target="com.axelor.apps.purchase.db.PurchaseOrderLine" type="many-to-many"
              grid-view="purchase-order-line-grid" form-view="purchase-order-line-form"

@@ -55,6 +55,7 @@ import com.axelor.apps.report.engine.ReportSettings;
 import com.axelor.auth.AuthUtils;
 import com.axelor.auth.db.User;
 import com.axelor.db.EntityHelper;
+import com.axelor.db.Model;
 import com.axelor.i18n.I18n;
 import com.axelor.inject.Beans;
 import com.google.common.base.Strings;
@@ -65,6 +66,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -519,5 +521,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
       }
       purchaseOrderRepo.save(purchaseOrder);
     }
+  }
+
+  @Override
+  @Transactional
+  public void updatePurchaseOrderLines(Long purchaseOrderId, LocalDate estimatedReceiptDate) {
+    Objects.requireNonNull(purchaseOrderId);
+    Objects.requireNonNull(estimatedReceiptDate);
+    PurchaseOrder order = purchaseOrderRepo.find(purchaseOrderId);
+    if (order == null) {
+      return;
+    }
+    order.getPurchaseOrderLineList()
+            .stream().filter(Model::isSelected)
+            .forEach(purchaseOrderLine ->
+                    purchaseOrderLine.setEstimatedReceiptDate(estimatedReceiptDate));
+    purchaseOrderRepo.save(order);
   }
 }
